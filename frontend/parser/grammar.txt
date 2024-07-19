@@ -1,0 +1,29 @@
+// See: https://github.dev/fiji/javac/blob/master/src/main/java/com/sun/tools/javac/code/Symtab.java
+https://github.com/fiji/javac/blob/master/src/main/java/com/sun/tools/javac/code/Symtab.java#L364
+
+program        → (statement semis)* EOF
+statement -> declaration | assignment | expression
+assignment -> IDENTIFIER '=' NL* expression
+
+declaration    → varDecl | valDecl | stmt;
+stmt           → exprStmt | printStmt;
+exprStmt       → expression <NL> | ";" ;
+expression     → assignment ;
+ifExpr         → 'if' '(' Expression ')' Expression ('else' Expression)?;
+
+elvisExpr      → equality ( ( "?:" ) equality )*;
+equality       → comparison ( ( "!=" | "==" ) comparison )* ;
+comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term           → factor ( ( "-" | "+" ) factor )* ;
+factor         → unary ( ( "/" | "*" ) unary )* ;
+unary          → ( "!" | "-" ) unary
+               | primary ;
+primary        → NUMBER | STRING | "true" | "false" | "nil"
+               | "(" expression ")" | IDENTIFIER | IfExpr ;
+
+print     → "print" expression ;
+
+varDecl   → "var" IDENTIFIER (':' Type)? '=' expression
+valDecl   → "val" IDENTIFIER (':' Type)? '=' expression
+Type      → SimpleType ('?')?
+SimpleType→ 'String' | 'Int' | 'Boolean' | IDENTIFIER

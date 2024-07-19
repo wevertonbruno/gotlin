@@ -1,0 +1,3 @@
+var a: Int? = 42;
+val b: Int = 40
+val c = a!! + b
