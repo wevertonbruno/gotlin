@@ -1,0 +1,5 @@
+https://codeql.github.com/docs/codeql-language-guides/abstract-syntax-tree-classes-for-working-with-java-programs/
+https://github.dev/fiji/javac/blob/master/src/main/java/com/sun/tools/javac/code/Symtab.java
+https://cs.au.dk/~amoeller/RegAut/JavaBNF.html
+https://kotlinlang.org/spec/syntax-and-grammar.html#grammar-rule-classParameter
+https://github.com/fiji/javac/blob/master/src/main/java/com/sun/tools/javac/code/Symtab.java#L364
