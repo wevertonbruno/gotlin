@@ -21,6 +21,11 @@ unary          → ( "!" | "-" ) unary
 primary        → NUMBER | STRING | "true" | "false" | "nil"
                | "(" expression ")" | IDENTIFIER | IfExpr ;
 
+functionLiteral -> anonymousFunction
+anonymousFunction -> 'fun' parametersWithOptionalType [: Type] functionBody
+parametersWithOptionalType -> functionValueParameterWithOptionalType [',' functionValueParameterWithOptionalType]
+functionBody -> block | ('=' expression)
+
 print     → "print" expression ;
 
 varDecl   → "var" IDENTIFIER (':' Type)? '=' expression

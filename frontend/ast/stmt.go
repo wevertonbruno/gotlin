@@ -21,10 +21,10 @@ type ExprStmt struct {
 func (s *ExprStmt) stmt() {}
 
 type VariableDecl struct {
-	Name      token.Token
-	Type      Type
-	Value     Expr
-	Immutable bool
+	Name     token.Token
+	Type     Type
+	Value    Expr
+	ReadOnly bool
 }
 
 func (s *VariableDecl) stmt() {}
@@ -36,14 +36,21 @@ type AssignStmt struct {
 
 func (t *AssignStmt) stmt() {}
 
+type ClassPrimaryConstructor struct {
+	Parameters []ClassParam
+}
+
 type ClassParam struct {
-	Name string
-	Type Type
+	Name         string
+	Type         Type
+	DefaultValue Expr
+	ReadOnly     bool
 }
 
 type ClassDeclStmt struct {
-	Name   token.Token
-	Params []ClassParam
+	Name               token.Token
+	PrimaryConstructor *ClassPrimaryConstructor
+	Params             []ClassParam
 }
 
 func (t *ClassDeclStmt) stmt() {}

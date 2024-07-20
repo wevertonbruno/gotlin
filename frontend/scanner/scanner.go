@@ -51,16 +51,16 @@ func (s *Scanner) ScanTokens() []token.Token {
 func (s *Scanner) scan() {
 	switch s.current {
 	case '(':
-		s.addToken(token.LParen)
+		s.addToken(token.OPEN_PAREN)
 		break
 	case ')':
-		s.addToken(token.RParen)
+		s.addToken(token.CLOSE_PAREN)
 		break
 	case '{':
-		s.addToken(token.LBrace)
+		s.addToken(token.OPEN_BRACE)
 		break
 	case '}':
-		s.addToken(token.RBrace)
+		s.addToken(token.CLOSE_BRACE)
 		break
 	case ';':
 		s.addToken(token.SEMICOLON)
@@ -69,7 +69,7 @@ func (s *Scanner) scan() {
 		s.addToken(token.COLON)
 		break
 	case ',':
-		s.addToken(token.COLON)
+		s.addToken(token.COMMA)
 		break
 	case '.':
 		s.addToken(token.DOT)
@@ -78,14 +78,14 @@ func (s *Scanner) scan() {
 		if s.match('=') {
 			s.addToken(token.MINUS_ASSIGN)
 		} else {
-			s.addToken(token.OpMinus)
+			s.addToken(token.DASH)
 		}
 		break
 	case '+':
 		if s.match('=') {
 			s.addToken(token.PLUS_ASSIGN)
 		} else {
-			s.addToken(token.OpPlus)
+			s.addToken(token.PLUS)
 		}
 		break
 	case '/':
@@ -93,43 +93,43 @@ func (s *Scanner) scan() {
 			for ; s.current != '\n' && !s.isAtEnd(); s.advance() {
 			}
 		} else {
-			s.addToken(token.OpDivide)
+			s.addToken(token.SLASH)
 		}
 		break
 	case '*':
-		s.addToken(token.OpMulti)
+		s.addToken(token.STAR)
 		break
 	case '"':
 		s.addTokenString()
 		break
 	case '!':
 		if s.match('=') {
-			s.addToken(token.OpNotEq)
+			s.addToken(token.NOT_EQ)
 		} else if s.match('!') {
-			s.addToken(token.OpNotNull)
+			s.addToken(token.BANG_BANG)
 		} else {
 			s.addToken(token.NOT)
 		}
 		break
 	case '=':
 		if s.match('=') {
-			s.addToken(token.OpEq)
+			s.addToken(token.EQ_EQ)
 		} else {
 			s.addToken(token.ASSIGN)
 		}
 		break
 	case '<':
 		if s.match('=') {
-			s.addToken(token.OpLte)
+			s.addToken(token.LTE)
 		} else {
-			s.addToken(token.OpLt)
+			s.addToken(token.LT)
 		}
 		break
 	case '>':
 		if s.match('=') {
-			s.addToken(token.OpGte)
+			s.addToken(token.GTE)
 		} else {
-			s.addToken(token.OpGt)
+			s.addToken(token.GT)
 		}
 		break
 	case '&':
@@ -150,7 +150,7 @@ func (s *Scanner) scan() {
 		if s.match(':') {
 			s.addToken(token.ELVIS)
 		} else if s.match('.') {
-			s.addToken(token.OpSafeCall)
+			s.addToken(token.QUEST_DOT)
 		} else {
 			s.addToken(token.QUESTION)
 		}
@@ -263,7 +263,7 @@ func (s *Scanner) addTokenString() {
 	}
 
 	s.advance()
-	s.tokens = append(s.tokens, token.NewTokenLiteral(token.StringLit, sb.String(), s.line, s.col))
+	s.tokens = append(s.tokens, token.NewTokenLiteral(token.STRINGLIT, sb.String(), s.line, s.col))
 }
 
 func (s *Scanner) addTokenNumber() {
@@ -281,9 +281,9 @@ func (s *Scanner) addTokenNumber() {
 	}
 
 	if hasDot {
-		s.tokens = append(s.tokens, token.NewTokenLiteral(token.DoubleLit, sb.String(), s.line, s.col))
+		s.tokens = append(s.tokens, token.NewTokenLiteral(token.DOUBLELIT, sb.String(), s.line, s.col))
 	} else {
-		s.tokens = append(s.tokens, token.NewTokenLiteral(token.IntLit, sb.String(), s.line, s.col))
+		s.tokens = append(s.tokens, token.NewTokenLiteral(token.INTLIT, sb.String(), s.line, s.col))
 	}
 }
 

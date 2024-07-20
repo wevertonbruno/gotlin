@@ -22,45 +22,50 @@ func New(scanner Scanner) *Parser {
 	p := &Parser{scanner: scanner, cursor: 0}
 	p.lookupTable = NewLookupTable().
 		//Literals
-		AddNudHandler(token.IntLit, p.parsePrimaryExpr).
-		AddNudHandler(token.StringLit, p.parsePrimaryExpr).
-		AddNudHandler(token.BooleanLit, p.parsePrimaryExpr).
+		AddNudHandler(token.INTLIT, p.parsePrimaryExpr).
+		AddNudHandler(token.STRINGLIT, p.parsePrimaryExpr).
+		AddNudHandler(token.BOOLEANLIT, p.parsePrimaryExpr).
 		AddNudHandler(token.IDENTIFIER, p.parsePrimaryExpr).
+		AddNudHandler(token.FUNCTION, p.parseFunctionLiteral).
 
 		//Logical
 		AddLedHandler(token.AND, Logical, p.parseBinaryExpr).
 		AddLedHandler(token.OR, Logical, p.parseBinaryExpr).
 		AddLedHandler(token.ELVIS, Logical, p.parseBinaryExpr).
-		AddLedHandler(token.OpNotNull, Call, p.parseNotNullExpr).
+		AddLedHandler(token.BANG_BANG, Call, p.parseNotNullExpr).
 
 		//Relational
-		AddLedHandler(token.OpLt, Relational, p.parseBinaryExpr).
-		AddLedHandler(token.OpLte, Relational, p.parseBinaryExpr).
-		AddLedHandler(token.OpGt, Relational, p.parseBinaryExpr).
-		AddLedHandler(token.OpGte, Relational, p.parseBinaryExpr).
-		AddLedHandler(token.OpEq, Relational, p.parseBinaryExpr).
-		AddLedHandler(token.OpNotEq, Relational, p.parseBinaryExpr).
+		AddLedHandler(token.LT, Relational, p.parseBinaryExpr).
+		AddLedHandler(token.LTE, Relational, p.parseBinaryExpr).
+		AddLedHandler(token.GT, Relational, p.parseBinaryExpr).
+		AddLedHandler(token.GTE, Relational, p.parseBinaryExpr).
+		AddLedHandler(token.EQ_EQ, Relational, p.parseBinaryExpr).
+		AddLedHandler(token.NOT_EQ, Relational, p.parseBinaryExpr).
 
 		//Additive
-		AddLedHandler(token.OpPlus, Additive, p.parseBinaryExpr).
-		AddLedHandler(token.OpMinus, Additive, p.parseBinaryExpr).
-		AddLedHandler(token.OpDivide, Multiplicative, p.parseBinaryExpr).
-		AddLedHandler(token.OpMulti, Multiplicative, p.parseBinaryExpr).
+		AddLedHandler(token.PLUS, Additive, p.parseBinaryExpr).
+		AddLedHandler(token.DASH, Additive, p.parseBinaryExpr).
+		AddLedHandler(token.SLASH, Multiplicative, p.parseBinaryExpr).
+		AddLedHandler(token.STAR, Multiplicative, p.parseBinaryExpr).
+
+		// Call
+		AddLedHandler(token.OPEN_PAREN, Call, p.parseCallExpr).
 
 		//Unary
-		AddNudHandler(token.OpMinus, p.parseUnaryExpr).
-		AddNudHandler(token.OpPlus, p.parseUnaryExpr).
+		AddNudHandler(token.DASH, p.parseUnaryExpr).
+		AddNudHandler(token.PLUS, p.parseUnaryExpr).
 		AddNudHandler(token.NOT, p.parseUnaryExpr).
-		AddNudHandler(token.LParen, p.parseGroupingExpr).
+		AddNudHandler(token.OPEN_PAREN, p.parseGroupingExpr).
 
 		//Statements
 		AddStmtHandler(token.VAR, p.parseVariableDeclStmt).
 		AddStmtHandler(token.VAL, p.parseVariableDeclStmt).
 		AddStmtHandler(token.IDENTIFIER, p.parseAssignmentStmt).
+		AddStmtHandler(token.CLASS, p.parseClassDeclStmt).
 
 		// Types
 		AddTypeNudHandler(token.IDENTIFIER, p.parseUserType).
-		AddTypeNudHandler(token.LBracket, p.parseArrayType). // TODO Check array syntax
+		AddTypeNudHandler(token.OPEN_BRACKET, p.parseArrayType). // TODO Check array syntax
 		AddTypeLedHandler(token.QUESTION, Call, p.parseNullableType)
 
 	return p

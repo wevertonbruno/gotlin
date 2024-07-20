@@ -29,7 +29,7 @@ func (p *Parser) parseStmt() (ast.Stmt, error) {
 }
 
 func (p *Parser) parseVariableDeclStmt() (ast.Stmt, error) {
-	immutable := p.advance().Kind == token.VAL
+	readOnly := p.advance().Kind == token.VAL
 	identifier, err := p.expected(token.IDENTIFIER)
 	if err != nil {
 		return nil, err
@@ -66,10 +66,10 @@ func (p *Parser) parseVariableDeclStmt() (ast.Stmt, error) {
 	}
 
 	return &ast.VariableDecl{
-		Name:      identifier,
-		Type:      explicitType,
-		Value:     assignedValue,
-		Immutable: immutable,
+		Name:     identifier,
+		Type:     explicitType,
+		Value:    assignedValue,
+		ReadOnly: readOnly,
 	}, nil
 }
 
@@ -118,4 +118,64 @@ func (p *Parser) parseClassDeclStmt() (ast.Stmt, error) {
 		return nil, err
 	}
 
+	// Parses primary constructor
+	var primaryConstructor *ast.ClassPrimaryConstructor
+	if p.currentTokenKind() == token.OPEN_PAREN {
+		p.advance()
+		var parameters []ast.ClassParam
+		for p.hasTokens() && p.currentTokenKind() != token.CLOSE_PAREN {
+			parameter, err2 := p.expected(token.IDENTIFIER)
+			if err2 != nil {
+				return nil, err2
+			}
+
+			_, err2 = p.expected(token.COLON)
+			if err2 != nil {
+				return nil, err2
+			}
+
+			parameterType, err2 := p.parseType(Default)
+			if err2 != nil {
+				return nil, err2
+			}
+
+			var defaultValue ast.Expr
+			if p.currentTokenKind() == token.ASSIGN {
+				p.advance()
+				defaultValue, err = p.parseExpr(Default)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			parameters = append(parameters, ast.ClassParam{
+				Name:         parameter.Spelling,
+				Type:         parameterType,
+				ReadOnly:     true,
+				DefaultValue: defaultValue,
+			})
+
+			if p.currentTokenKind() != token.CLOSE_PAREN {
+				_, err = p.expected(token.COMMA)
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+		_, err = p.expected(token.CLOSE_PAREN)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(parameters) != 0 {
+			primaryConstructor = &ast.ClassPrimaryConstructor{
+				Parameters: parameters,
+			}
+		}
+	}
+
+	return &ast.ClassDeclStmt{
+		Name:               className,
+		PrimaryConstructor: primaryConstructor,
+	}, nil
 }

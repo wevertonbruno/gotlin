@@ -19,7 +19,7 @@ func (p *Parser) parseUserType() (ast.Type, error) {
 
 func (p *Parser) parseArrayType() (ast.Type, error) {
 	p.advance()
-	_, err := p.expected(token.RBracket)
+	_, err := p.expected(token.CLOSE_BRACKET)
 	if err != nil {
 		return nil, err
 	}

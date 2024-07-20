@@ -47,6 +47,13 @@ type StringLiteral struct {
 
 func (e *StringLiteral) expr() {}
 
+// fun + parameters optional type
+type FunctionLiteral struct {
+	Type Type
+}
+
+func (e *FunctionLiteral) expr() {}
+
 type GroupingExpr struct {
 	Expr Expr
 }
@@ -64,3 +71,10 @@ type NonNullableExpr struct {
 }
 
 func (e *NonNullableExpr) expr() {}
+
+type CallExpr struct {
+	Callee Expr
+	Args   []Expr
+}
+
+func (e *CallExpr) expr() {}

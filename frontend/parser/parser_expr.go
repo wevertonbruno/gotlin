@@ -10,16 +10,16 @@ import (
 
 func (p *Parser) parsePrimaryExpr() (ast.Expr, error) {
 	switch p.currentTokenKind() {
-	case token.IntLit:
+	case token.INTLIT:
 		value, err := strconv.ParseInt(p.advance().Spelling, 10, 64)
 		return &ast.IntLiteral{
 			Value: value,
 		}, err
-	case token.StringLit:
+	case token.STRINGLIT:
 		return &ast.StringLiteral{
 			Value: p.advance().Spelling,
 		}, nil
-	case token.BooleanLit:
+	case token.BOOLEANLIT:
 		return &ast.BoolLiteral{
 			Value: p.advance().Spelling == "true",
 		}, nil
@@ -67,7 +67,7 @@ func (p *Parser) parseGroupingExpr() (ast.Expr, error) {
 		return nil, err
 	}
 
-	_, err = p.expected(token.RParen)
+	_, err = p.expected(token.CLOSE_PAREN)
 	if err != nil {
 		return nil, err
 	}
@@ -87,6 +87,42 @@ func (p *Parser) parseNotNullExpr(left ast.Expr, precedence BindingPower) (ast.E
 
 	return &ast.NonNullableExpr{
 		Expr: left,
+	}, nil
+}
+
+func (p *Parser) parseCallExpr(left ast.Expr, precedence BindingPower) (ast.Expr, error) {
+	switch left.(type) {
+	case *ast.IdentifierExpr, *ast.CallExpr:
+		break
+	default:
+		return nil, NewError(fmt.Sprintf("Expression '%s' cannot be invoked as a function.", left))
+	}
+
+	var args []ast.Expr
+	p.advance()
+	for p.hasTokens() && p.currentTokenKind() != token.CLOSE_PAREN {
+		arg, err := p.parseExpr(Default)
+		if err != nil {
+			return nil, err
+		}
+
+		args = append(args, arg)
+		if p.currentTokenKind() != token.CLOSE_PAREN {
+			_, err = p.expected(token.COMMA)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	_, err := p.expected(token.CLOSE_PAREN)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ast.CallExpr{
+		Callee: left,
+		Args:   args,
 	}, nil
 }
 
