@@ -10,22 +10,31 @@ import (
 func (p *Parser) parseStmt() (ast.Stmt, error) {
 	kind := p.currentTokenKind()
 	stmtHandler, exists := p.lookupTable.GetStmtHandlerIfExists(kind)
+	var stmt ast.Stmt
 	if exists {
-		return stmtHandler()
+		var err error
+		stmt, err = stmtHandler()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		expr, err := p.parseExpr(Default)
+		if err != nil {
+			return nil, err
+		}
+
+		stmt = &ast.ExprStmt{
+			Expr: expr,
+		}
 	}
-	expr, err := p.parseExpr(Default)
+
+	// TODO Remove this expectation
+	_, err := p.expected(token.SEMICOLON, token.NEWLINE)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = p.expected(token.SEMICOLON, token.NEWLINE)
-	if err != nil {
-		return nil, err
-	}
-
-	return &ast.ExprStmt{
-		Expr: expr,
-	}, nil
+	return stmt, nil
 }
 
 func (p *Parser) parseVariableDeclStmt() (ast.Stmt, error) {

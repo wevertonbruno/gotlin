@@ -49,7 +49,9 @@ func (e *StringLiteral) expr() {}
 
 // fun + parameters optional type
 type FunctionLiteral struct {
-	Type Type
+	Parameters []*ParameterWithOptionalType
+	Type       Type
+	Body       *FunctionBody
 }
 
 func (e *FunctionLiteral) expr() {}

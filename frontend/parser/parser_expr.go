@@ -126,6 +126,92 @@ func (p *Parser) parseCallExpr(left ast.Expr, precedence BindingPower) (ast.Expr
 	}, nil
 }
 
+func (p *Parser) parseFunctionLiteral() (ast.Expr, error) {
+	p.advance()
+	_, err := p.expected(token.OPEN_PAREN)
+	if err != nil {
+		return nil, err
+	}
+
+	var funcParameters []*ast.ParameterWithOptionalType
+	for p.hasTokens() && p.currentTokenKind() != token.CLOSE_PAREN {
+		funcParameter, err2 := p.expected(token.IDENTIFIER)
+		if err2 != nil {
+			return nil, err2
+		}
+
+		_, err2 = p.expected(token.COLON)
+		if err2 != nil {
+			return nil, err2
+		}
+
+		funcParameterType, err2 := p.parseType(Default)
+		if err2 != nil {
+			return nil, err2
+		}
+
+		funcParameters = append(funcParameters, &ast.ParameterWithOptionalType{
+			Name: funcParameter.Spelling,
+			Type: funcParameterType,
+		})
+
+		if p.currentTokenKind() != token.CLOSE_PAREN {
+			_, err = p.expected(token.COMMA)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	_, err = p.expected(token.CLOSE_PAREN)
+	if err != nil {
+		return nil, err
+	}
+
+	var funcType ast.Type
+	if p.currentTokenKind() == token.COLON {
+		p.advance()
+		funcType, err = p.parseType(Default)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// fun () = expr
+	var bodyExpr ast.Expr
+	if p.currentTokenKind() == token.ASSIGN {
+		p.advance()
+		bodyExpr, err = p.parseExpr(Default)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// fun () {}
+	var block []ast.Stmt
+	if p.currentTokenKind() == token.OPEN_BRACE {
+		p.advance()
+		for p.hasTokens() && p.currentTokenKind() != token.CLOSE_BRACE {
+			stmt, stmtErr := p.parseStmt()
+			if stmtErr != nil {
+				return nil, stmtErr
+			}
+
+			block = append(block, stmt)
+			if p.currentTokenKind() != token.CLOSE_BRACE {
+				_, err = p.expected(token.COMMA)
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+	}
+
+	return &ast.FunctionLiteral{
+		Type:       funcType,
+		Parameters: funcParameters,
+	}, nil
+}
+
 func (p *Parser) parseExpr(precedence BindingPower) (ast.Expr, error) {
 	currKind := p.currentTokenKind()
 	nudHandler, exists := p.lookupTable.GetNUDHandlerIfExists(currKind)
